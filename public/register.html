@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Register - Smart Recycling</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <div class="card">
+    <h2>Register</h2>
+    <form id="regForm">
+      <input name="username" type="text" placeholder="Username" required>
+      <input name="email" type="email" placeholder="Email" required>
+      <input name="password" type="password" placeholder="Password" required>
+      <button type="submit">Register</button>
+    </form>
+    <p>Already registered? <a href="/">Login</a></p>
+    <div id="msg"></div>
+  </div>
+
+<script>
+document.getElementById("regForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target;
+  const data = { username: f.username.value, email: f.email.value, password: f.password.value };
+  const res = await fetch("/api/register", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
+  });
+  const text = await res.text();
+  document.getElementById("msg").innerText = text;
+  if (res.ok) setTimeout(() => location.href = "/", 1000);
+});
+</script>
+</body>
+</html>
