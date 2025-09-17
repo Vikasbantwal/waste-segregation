@@ -1,57 +1,64 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const path = require("path");
 const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/wasteDB")
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, "public")));
 
-// Schema
-const wasteSchema = new mongoose.Schema({
-  type: String,
-  location: String,
-  date: { type: Date, default: Date.now }
+// File upload setup
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
 });
-
-// Model
-const Waste = mongoose.model("Waste", wasteSchema);
+const upload = multer({ storage: storage });
 
 // Routes
 app.get("/", (req, res) => {
-  res.send("🚀 Waste Segregation API is running...");
+  res.sendFile(path.join(__dirname, "public", "home.html"));
 });
 
-// Add new waste entry
-app.post("/add", async (req, res) => {
-  try {
-    const { type, location } = req.body;
-    const newWaste = new Waste({ type, location });
-    await newWaste.save();
-    res.json({ message: "✅ Waste data added successfully!" });
-  } catch (error) {
-    res.status(500).json({ error: "❌ Failed to add waste data" });
+// Example: handle uploads
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  res.json({ message: "File uploaded successfully", file: req.file });
+});
+
+// Example: login API
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // TODO: Replace with DB check
+  if (username === "admin" && password === "1234") {
+    res.json({ success: true, message: "Login successful" });
+  } else {
+    res.json({ success: false, message: "Invalid credentials" });
   }
 });
 
-// Get all waste entries
-app.get("/waste", async (req, res) => {
-  try {
-    const wastes = await Waste.find();
-    res.json(wastes);
-  } catch (error) {
-    res.status(500).json({ error: "❌ Failed to fetch waste data" });
-  }
+// Example: register API
+app.post("/register", (req, res) => {
+  const { username, password } = req.body;
+  // TODO: Save user in DB
+  res.json({ success: true, message: "User registered successfully" });
 });
 
-// Start Server
-const PORT = 5000;
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
