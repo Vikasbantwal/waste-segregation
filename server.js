@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 
 // Serve static files from public folder
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.static('public'));
 // File upload setup
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
