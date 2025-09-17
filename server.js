@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const path = require("path");
+const path = require("path"); // 👈 Import the 'path' module
 const cors = require("cors");
 const multer = require("multer");
 
@@ -12,9 +12,9 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Serve static files from public folder
+// 💡 The corrected way to serve static files
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use(express.static('public'));
 // File upload setup
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -22,11 +22,14 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
-  }
+  },
 });
 const upload = multer({ storage: storage });
 
 // Routes
+// Since you're serving static files from the 'public' folder,
+// this route is not strictly necessary if 'home.html' is your default index.
+// However, it's fine to keep for clarity.
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "home.html"));
 });
